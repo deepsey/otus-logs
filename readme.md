@@ -1,21 +1,21 @@
-Домашнее задание по теме "Сбор и анализ логов"
+# Домашнее задание по теме "Сбор и анализ логов"
 
-1. Поднимаеим в Vagrant два сервера: otus-web (192.168.100.64) и otus-log (192.168.100.61).
+## 1. Поднимаеим в Vagrant два сервера: otus-web (192.168.100.64) и otus-log (192.168.100.61).
 
-2. Для построения системы централизованного хранения логов будем использовать journald.
+## 2. Для построения системы централизованного хранения логов будем использовать journald.
 
-3. На центральном сервере otus-log:
+## 3. На центральном сервере otus-log:
 
-   3.1. Устанавливаем пакет systemd-journal-gateway
+   #### 3.1. Устанавливаем пакет systemd-journal-gateway
 
         # yum install systemd-journal-gateway
         
-   3.2. Настраиваем пассивный режим работы демона systemd-journal-remote
+   #### 3.2. Настраиваем пассивный режим работы демона systemd-journal-remote
         
         # mkdir -p /var/log/journal/remote
         # chown systemd-journal-remote:systemd-journal-remote /var/log/journal/remote
       
-   3.3. Редактируем конфиг демона
+   #### 3.3. Редактируем конфиг демона
  
         # vi /lib/systemd/system/systemd-journal-remote.service
         
