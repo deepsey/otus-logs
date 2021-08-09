@@ -1,21 +1,21 @@
 # Домашнее задание по теме "Сбор и анализ логов"
 
-## 1. Поднимаеим в Vagrant два сервера: otus-web (192.168.100.64) и otus-log (192.168.100.61).
+## 1. Поднимаем в Vagrant два сервера: otus-web (192.168.100.64) и otus-log (192.168.100.61).
 
 ## 2. Для построения системы централизованного хранения логов будем использовать journald.
 
 ## 3. На центральном сервере otus-log:
 
-   #### 3.1. Устанавливаем пакет systemd-journal-gateway
+#### 3.1. Устанавливаем пакет systemd-journal-gateway
 
         # yum install systemd-journal-gateway
         
-   #### 3.2. Настраиваем пассивный режим работы демона systemd-journal-remote
+#### 3.2. Настраиваем пассивный режим работы демона systemd-journal-remote
         
         # mkdir -p /var/log/journal/remote
         # chown systemd-journal-remote:systemd-journal-remote /var/log/journal/remote
       
-   #### 3.3. Редактируем конфиг демона
+#### 3.3. Редактируем конфиг демона
  
         # vi /lib/systemd/system/systemd-journal-remote.service
         
@@ -47,7 +47,7 @@
     Also=systemd-journal-remote.socket  
 =========================================================================================  
   
-   3.4. Смотрим конфиг сокета:
+#### 3.4. Смотрим конфиг сокета:
     
     vi /lib/systemd/system/systemd-journal-remote.socket
         
@@ -70,18 +70,18 @@
     WantedBy=sockets.target  
 ========================================================================================  
 
-   3.5. Перезагружаем конфиги демонов и рестартим сервис systemd-journal-remote
+#### 3.5. Перезагружаем конфиги демонов и рестартим сервис systemd-journal-remote
     
         # systemctl daemon-reload
         # systemctl restart systemd-journal-remote
         
-#### 4. На удаленном сервере otus-web:
+## 4. На удаленном сервере otus-web:
 
-   4.1. Устанавливаем пакет systemd-journal-gateway  
+#### 4.1. Устанавливаем пакет systemd-journal-gateway  
  
         # yum install systemd-journal-gateway  
 
-   4.2. Редактируем конфиг /etc/systemd/journal-upload.conf, прописывая в него адрес центрального сервера 192.168.100.61  
+#### 4.2. Редактируем конфиг /etc/systemd/journal-upload.conf, прописывая в него адрес центрального сервера 192.168.100.61  
 
        # vi /etc/systemd/journal-upload.conf  
 
@@ -94,18 +94,18 @@
     # TrustedCertificateFile=/etc/ssl/ca/trusted.pem  
 =======================================================================================  
  
-   4.3. Стартуем сервис  
+#### 4.3. Стартуем сервис  
     
         # systemctl start systemd-journal-upload  
   
-5. Проверяем содержимое директории на центральном сервере  
+## 5. Проверяем содержимое директории на центральном сервере  
   
   
        [root@otus-log ~]# ls /var/log/journal/remote  
        remote-192.168.100.64.journal  
   
   
-6. Смотрим логи на центральном сервере   
+## 6. Смотрим логи на центральном сервере   
 
 
        [root@otus-log ~]# journalctl --file /var/log/journal/remote/remote-192.168.100.64.journal  
@@ -145,12 +145,12 @@
        май 04 09:13:15 otus-web systemd[1]: Starting udev Kernel Device Manager...  
 
   
-#### 7. Устанавливаем и запускаем nginx на otus-web
+## 7. Устанавливаем и запускаем nginx на otus-web
 
     # yum install nginx  
     # systemctl start nginx  
    
-#### 8. Играемся с конфигурацией nginx, смотрим логи на центральном сервере:
+## 8. Играемся с конфигурацией nginx, смотрим логи на центральном сервере:
 
     # journalctl -u nginx --file /var/log/journal/remote/remote-192.168.100.64.journal  
   
@@ -175,9 +175,9 @@
   
   
 
-#### 9. Настраиваем хранение логов аудита на центральном сервере.
+## 9. Настраиваем хранение логов аудита на центральном сервере.
 
-   9.1. На otus-web:  
+#### 9.1. На otus-web:  
   
    9.1.1. Устанавливаем пакет audispd-plugins  
  
@@ -220,7 +220,7 @@
 
 ===================================================================================  
   
-9.2. На центральном сервере:  
+#### 9.2. На центральном сервере:  
       
   9.2.1. Чтобы принимать логи аудита с удаленных хостов, в файле /etc/audit/auditd.conf  
            устанавливаем следующие параметры:  
@@ -239,30 +239,32 @@
  9.3. Проходим процедуру аутентификации на otus-web, на otus-log смотрим логи аудита:
     
     [root@otus-log ~]# aureport -au
+    
+=======================================================================================    
 
-Authentication Report
-============================================
-# date time acct host term exe success event
-============================================
-1. 04.05.2021 09:04:02 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 42
-2. 04.05.2021 09:04:02 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 43
-3. 04.05.2021 09:04:02 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 46
-4. 04.05.2021 09:04:28 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 517
-5. 04.05.2021 09:04:28 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 518
-6. 04.05.2021 09:04:28 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 521
-7. 04.05.2021 09:14:29 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 742
-8. 04.05.2021 09:14:29 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 743
-9. 04.05.2021 09:14:29 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 746
-10. 04.05.2021 09:16:03 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 38
-11. 04.05.2021 09:16:03 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 39
-12. 04.05.2021 09:16:03 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 42
-13. 04.05.2021 09:29:25 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 1119
-14. 04.05.2021 09:29:25 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 1120
-15. 04.05.2021 09:29:25 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 1123
-16. 14.05.2021 06:55:55 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 2933
-17. 14.05.2021 06:55:55 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 2934
-18. 14.05.2021 06:55:55 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 2937
-19. 18.05.2021 10:14:49 ? otus-web tty1 /usr/bin/login no 3255
-20. 18.05.2021 10:17:39 vagrant otus-web tty1 /usr/bin/login yes 3267
-21. 18.05.2021 10:21:35 ? otus-web tty1 /usr/bin/login no 3298
-22. 18.05.2021 10:21:53 vagrant otus-web tty1 /usr/bin/login yes 3300
+    Authentication Report  
+    ============================================  
+    # date time acct host term exe success event  
+    ============================================  
+    1. 04.05.2021 09:04:02 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 42  
+    2. 04.05.2021 09:04:02 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 43  
+    3. 04.05.2021 09:04:02 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 46  
+    4. 04.05.2021 09:04:28 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 517  
+    5. 04.05.2021 09:04:28 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 518  
+    6. 04.05.2021 09:04:28 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 521  
+    7. 04.05.2021 09:14:29 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 742  
+    8. 04.05.2021 09:14:29 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 743  
+    9. 04.05.2021 09:14:29 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 746  
+    10. 04.05.2021 09:16:03 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 38  
+    11. 04.05.2021 09:16:03 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 39  
+    12. 04.05.2021 09:16:03 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 42  
+    13. 04.05.2021 09:29:25 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 1119  
+    14. 04.05.2021 09:29:25 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 1120  
+    15. 04.05.2021 09:29:25 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 1123  
+    16. 14.05.2021 06:55:55 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 2933  
+    17. 14.05.2021 06:55:55 vagrant 10.0.2.2 ? /usr/sbin/sshd yes 2934  
+    18. 14.05.2021 06:55:55 vagrant 10.0.2.2 ssh /usr/sbin/sshd yes 2937  
+    19. 18.05.2021 10:14:49 ? otus-web tty1 /usr/bin/login no 3255  
+    20. 18.05.2021 10:17:39 vagrant otus-web tty1 /usr/bin/login yes 3267  
+    21. 18.05.2021 10:21:35 ? otus-web tty1 /usr/bin/login no 3298  
+    22. 18.05.2021 10:21:53 vagrant otus-web tty1 /usr/bin/login yes 3300  
